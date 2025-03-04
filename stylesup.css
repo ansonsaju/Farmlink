@@ -167,32 +167,35 @@ button:hover {
 }
 
 @media screen and (max-width: 768px) {
-    .nav-links {
-        text-align: center;
-        padding: 10px;
+    .containers {
+        width: 90%;
+        padding: 50px;
     }
-    .nav-links a {
-        font-size: 16px;
-        margin: 0 10px;
-    }
-    .hero {
-        padding: 10px;
-    }
-    .hero-content {
-        max-width: 400px;
-        padding: 20px;
-    }
-    .hero h1 {
-        font-size: 32px;
-    }
-    .start-btn {
-        font-size: 0.9em;
-        padding: 8px 16px;
+    .upload-section {
+        width: 250px;
     }
     body {
         overflow: auto !important; /* Ensure scrolling works on mobile */
     }
 }
+
+@media screen and (max-width: 480px) {
+    .containers {
+        width: 95%;
+        padding: 30px;
+    }
+    .upload-section {
+        width: 200px;
+    }
+    .submit-btn {
+        font-size: 14px;
+        padding: 10px 20px;
+    }
+    body {
+        overflow: auto !important; /* Fix scrolling issue on mobile */
+    }
+}
+
 
 @media screen and (max-width: 480px) {
     .nav-links {
