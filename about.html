@@ -13,6 +13,12 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            min-height: 100vh; /* Allows content to grow */
+            overflow: auto; /* Enables scrolling */
+        }
+        
+        html {
+            overflow: auto; /* Ensure scrolling is enabled */
         }
         
         /* Navigation Bar */
@@ -46,6 +52,9 @@
                 font-size: 16px;
                 margin: 0 10px;
             }
+            body {
+                overflow: auto !important; /* Ensure scrolling is allowed */
+            }
         }
         
         @media screen and (max-width: 480px) {
@@ -55,6 +64,9 @@
             .nav-links a {
                 font-size: 14px;
                 margin: 0 5px;
+            }
+            body {
+                overflow: auto !important; /* Fix scrolling issue on mobile */
             }
         }
     </style>
