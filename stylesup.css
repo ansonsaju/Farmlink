@@ -6,6 +6,7 @@ body {
     height: 100vh;
     background-color: #ece6e6;
     font-family: Arial, sans-serif;
+    overflow: auto;
 }
 
 /* Upload Section with Drag & Drop */
@@ -92,7 +93,7 @@ body {
 }
 
 html, body {
-    overflow: hidden;
+    overflow: auto;
 }
 
 .containers {
@@ -151,33 +152,69 @@ button:hover {
 }
 
 /* Responsive Design */
-@media screen and (max-width: 1024px) {
-    .containers {
-        width: 80%;
-        padding: 100px;
+@media screen and (max-width: 992px) {
+    .hero-content {
+        max-width: 500px;
+        padding: 25px;
+    }
+    .hero h1 {
+        font-size: 40px;
+    }
+    .start-btn {
+        font-size: 1em;
+        padding: 10px 20px;
     }
 }
 
 @media screen and (max-width: 768px) {
-    .containers {
-        width: 90%;
-        padding: 50px;
+    .nav-links {
+        text-align: center;
+        padding: 10px;
     }
-    .upload-section {
-        width: 250px;
+    .nav-links a {
+        font-size: 16px;
+        margin: 0 10px;
+    }
+    .hero {
+        padding: 10px;
+    }
+    .hero-content {
+        max-width: 400px;
+        padding: 20px;
+    }
+    .hero h1 {
+        font-size: 32px;
+    }
+    .start-btn {
+        font-size: 0.9em;
+        padding: 8px 16px;
+    }
+    body {
+        overflow: auto !important; /* Ensure scrolling works on mobile */
     }
 }
 
 @media screen and (max-width: 480px) {
-    .containers {
-        width: 95%;
-        padding: 30px;
+    .nav-links {
+        text-align: center;
+        padding: 5px;
     }
-    .upload-section {
-        width: 200px;
-    }
-    .submit-btn {
+    .nav-links a {
         font-size: 14px;
-        padding: 10px 20px;
+        margin: 0 5px;
+    }
+    .hero-content {
+        max-width: 90%;
+        padding: 15px;
+    }
+    .hero h1 {
+        font-size: 28px;
+    }
+    .start-btn {
+        font-size: 0.8em;
+        padding: 6px 12px;
+    }
+    body {
+        overflow: auto !important; /* Fix scrolling issue on mobile */
     }
 }
