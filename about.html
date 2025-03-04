@@ -1,31 +1,77 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About</title>
-    <link rel="stylesheet" href="">
     <style>
         body {
-    background-image: url('Beige Brown Minimalist Candle Store Website Desktop Prototype_20250303_090326_0000.svg'); /* Replace with the actual file name */
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-}
+            background-image: url('Beige Brown Minimalist Candle Store Website Desktop Prototype_20250303_090326_0000.svg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Navigation Bar */
+        .nav-links {
+            text-align: right;
+            padding: 20px;
+        }
+
+        .nav-links a {
+            margin: 0 15px;
+            text-decoration: none;
+            font-size: 18px;
+            color: rgb(27, 26, 24);
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: rgb(248, 244, 239);
+        }
+        
+        /* Responsive Design */
+        @media screen and (max-width: 1024px) {
+            .nav-links {
+                text-align: center;
+            }
+        }
+        
+        @media screen and (max-width: 768px) {
+            .nav-links a {
+                font-size: 16px;
+                margin: 0 10px;
+            }
+        }
+        
+        @media screen and (max-width: 480px) {
+            .nav-links {
+                padding: 10px;
+            }
+            .nav-links a {
+                font-size: 14px;
+                margin: 0 5px;
+            }
+        }
     </style>
 </head>
 <body>
- 
+    <div class="nav-links">
+        <a href="home.html">HOME</a>
+        <a href="about.html">ABOUT</a>
+    </div>
     
     <footer>
         <br><br><br><br>
-        <p>&copy; <span id="year"></span>Farmlink</p>
+        <p>&copy; <span id="year"></span> Farmlink</p>
     </footer>
     
     <script>
         document.getElementById("year").textContent = new Date().getFullYear();
     </script>
-    
 </body>
 </html>
