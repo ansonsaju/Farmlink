@@ -6,10 +6,10 @@
     font-family: 'Arial', sans-serif;
 }
 
-/* Prevent Scrolling */
+/* Enable Scrolling */
 html, body {
-    height: 100%;
-    overflow: hidden;
+    min-height: 100vh;
+    overflow: auto;
     background: #f4f1ec;
     animation: fadeIn 1.5s ease-in-out;
 }
@@ -37,7 +37,7 @@ html, body {
 .hero {
     position: relative;
     width: 100%;
-    height: 100vh;
+    min-height: 100vh;
     background: url('about.html');
     display: flex;
     justify-content: center;
@@ -142,6 +142,9 @@ body {
         font-size: 0.9em;
         padding: 8px 16px;
     }
+    body {
+        overflow: auto !important; /* Ensure scrolling works on mobile */
+    }
 }
 
 @media screen and (max-width: 480px) {
@@ -163,5 +166,8 @@ body {
     .start-btn {
         font-size: 0.8em;
         padding: 6px 12px;
+    }
+    body {
+        overflow: auto !important; /* Fix scrolling issue on mobile */
     }
 }
