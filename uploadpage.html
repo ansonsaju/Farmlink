@@ -31,6 +31,7 @@
                 </div>
             </center>
             <button onclick="initWebcam()">Start Webcam</button>
+            <button onclick="switchCamera()">Switch Camera</button>
             <button onclick="predictWebcam()">Predict Webcam</button>
             <br><br>
             <!-- Submit Button with Animation -->
@@ -80,7 +81,14 @@
             await webcam.setup();
             await webcam.play();
             window.requestAnimationFrame(loop);
+
+            document.getElementById("webcam-container").innerHTML = "";
             document.getElementById("webcam-container").appendChild(webcam.canvas);
+        }
+         // Switch between front and back camera on mobile devices
+         function switchCamera() {
+            currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
+            initWebcam(); // Restart webcam with new camera mode
         }
 
         async function loop() {
