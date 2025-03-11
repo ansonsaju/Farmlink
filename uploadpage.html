@@ -5,65 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teachable Machine Image Classification</title>
     <link rel="stylesheet" href="stylesup.css">
-    <!-- Load TensorFlow.js (TF.js) -->
+    
+    <!-- Load TensorFlow.js for ML model execution -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-
-    <!-- Load Teachable Machine Library -->
+    
+    <!-- Load Teachable Machine image library -->
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
-
 </head>
 <body>
-    
-  
     <div class="containers">
         <div class="container">
             <h1>Farmlink</h1>
             <p>This website currently supports detection for rice, wheat, maize, and more.</p>
             
-            <!-- Upload Image Section with Drag & Drop Feature -->
-            <center>
-                <div class="upload-section" id="upload-area">
-                    <label for="imageUpload" class="upload-btn" id="uploadLabel">UPLOAD IMAGE</label>
-                    <input type="file" id="imageUpload" accept="image/*" onchange="handleUpload()" hidden>
-                    <div id="uploadAnimation"></div>
-                    <img id="previewImage" src="" alt="Uploaded Image" style="display:none; max-width: 100%; margin-top: 10px;">
-                    <p class="drag-drop-text">Or drag and drop an image here</p>
-                </div>
-            </center>
+            <!-- Buttons to control webcam and prediction -->
             <button onclick="initWebcam()">Start Webcam</button>
             <button onclick="switchCamera()">Switch Camera</button>
             <button onclick="predictWebcam()">Predict Webcam</button>
             <br><br>
-            <!-- Submit Button with Animation -->
-            <button class="submit-btn" onclick="predictUpload()">SUBMIT</button>
+            
+            <!-- Containers for webcam feed and result labels -->
             <div id="webcam-container"></div>
             <div id="label-container"></div>
-            
-            <div id="result"></div>
         </div>
     </div>
     <script>
-        // Handle image upload and preview display
-        function handleUpload() {
-            const fileInput = document.getElementById("imageUpload");
-            const previewImage = document.getElementById("previewImage");
-            const uploadAnimation = document.getElementById("uploadAnimation");
-            
-            if (fileInput.files.length > 0) {
-                // Show image preview
-                previewImage.src = window.URL.createObjectURL(fileInput.files[0]);
-                previewImage.style.display = "block";
-                
-                // Simulate upload animation
-                uploadAnimation.innerHTML = "<div class='loading'>Uploading...</div>";
-                setTimeout(() => uploadAnimation.innerHTML = "Uploaded Successfully!", 2000);
-            }
-        }
+        // URL of the trained Teachable Machine model
+        const URL = "https://teachablemachine.withgoogle.com/models/fpsv1H4Qb/";
+        let model, webcam, labelContainer, maxPredictions, currentFacingMode = "user"; // Default to front camera
 
-        const URL = "https://teachablemachine.withgoogle.com/models/fpsv1H4Qb/"; // Replace with your actual model URL
-        let model, webcam, labelContainer, maxPredictions, uploadedImage;
-
-        // Load the model automatically on page load
+        // Load the ML model on page load
         async function loadModel() {
             console.log("Loading Model...");
             const modelURL = URL + "model.json";
@@ -74,23 +45,27 @@
             console.log("Model loaded successfully!");
         }
 
+        // Initialize webcam feed
         async function initWebcam() {
             console.log("Initializing Webcam...");
-            const flip = true;
-            webcam = new tmImage.Webcam(200, 200, flip);
-            await webcam.setup();
-            await webcam.play();
+            if (webcam) webcam.stop(); // Stop any existing webcam feed
+            webcam = new tmImage.Webcam(200, 200, currentFacingMode); // Set camera mode
+            await webcam.setup(); // Request camera permissions
+            await webcam.play(); // Start webcam feed
             window.requestAnimationFrame(loop);
-
+            
+            // Clear previous webcam feed and attach new feed
             document.getElementById("webcam-container").innerHTML = "";
             document.getElementById("webcam-container").appendChild(webcam.canvas);
         }
-         // Switch between front and back camera on mobile devices
-         function switchCamera() {
+
+        // Switch between front and back camera on mobile devices
+        function switchCamera() {
             currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
             initWebcam(); // Restart webcam with new camera mode
         }
 
+        // Continuously update webcam feed
         async function loop() {
             if (webcam) {
                 webcam.update();
@@ -98,6 +73,7 @@
             }
         }
 
+        // Capture webcam image and make a prediction using the model
         async function predictWebcam() {
             if (!model || !webcam) {
                 console.error("Model or webcam not initialized!");
@@ -107,32 +83,7 @@
             displayResults(prediction);
         }
 
-        // Handle File Upload
-        document.getElementById("imageUpload").addEventListener("change", function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    uploadedImage = new Image();
-                    uploadedImage.src = e.target.result;
-                    uploadedImage.onload = function() {
-                        document.getElementById("uploadedImage").src = uploadedImage.src;
-                        document.getElementById("uploadedImage").style.display = "block";
-                    };
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        async function predictUpload() {
-            if (!model || !uploadedImage) {
-                console.error("Model or image not initialized!");
-                return;
-            }
-            const prediction = await model.predict(uploadedImage);
-            displayResults(prediction);
-        }
-
+        // Display classification results
         function displayResults(prediction) {
             labelContainer.innerHTML = ""; // Clear previous results
             for (let i = 0; i < maxPredictions; i++) {
@@ -142,7 +93,8 @@
             }
         }
 
-        // Load model on page load
+        // Load the model when the page loads
         window.onload = loadModel;
     </script>
 </body>
+</html>
