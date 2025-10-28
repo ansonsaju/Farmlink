@@ -3,27 +3,1192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Farmlink</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Farmlink - AI-Powered Crop Disease Detection</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-light: #E7EFDA;
+            --color-medium-light: #B7C9B9;
+            --color-medium: #779B7F;
+            --color-dark: #3D5F3E;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--color-light) 0%, var(--color-medium-light) 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .leaf {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            opacity: 0.3;
+            animation: float 15s infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+
+        nav {
+            background: rgba(61, 95, 62, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 5%;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--color-light);
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            animation: rotate 3s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--color-light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--color-light);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .hero {
+            margin-top: 80px;
+            padding: 4rem 5%;
+            text-align: center;
+            animation: fadeIn 1s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            color: var(--color-dark);
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--color-medium);
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            line-height: 1.6;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 5%;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            animation: slideUp 0.6s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--color-dark);
+        }
+
+        .stat-label {
+            color: var(--color-medium);
+            font-size: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 5%;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: slideUp 0.6s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+        }
+
+        .card h2 {
+            color: var(--color-dark);
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .upload-area {
+            border: 3px dashed var(--color-medium);
+            border-radius: 15px;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--color-light);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(119, 155, 127, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .upload-area:hover::before {
+            left: 100%;
+        }
+
+        .upload-area:hover {
+            border-color: var(--color-dark);
+            background: var(--color-medium-light);
+            transform: scale(1.02);
+        }
+
+        .upload-area.dragover {
+            background: var(--color-medium);
+            border-color: var(--color-dark);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        #previewImage {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 10px;
+            margin-top: 1rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            animation: zoomIn 0.5s ease;
+        }
+
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--color-medium) 0%, var(--color-dark) 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(61, 95, 62, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(61, 95, 62, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--color-medium-light) 0%, var(--color-medium) 100%);
+            margin-left: 1rem;
+        }
+
+        #label-container {
+            margin-top: 1.5rem;
+        }
+
+        .result-item {
+            background: var(--color-light);
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .result-item:hover {
+            background: var(--color-medium-light);
+            transform: translateX(5px);
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: var(--color-dark);
+        }
+
+        .confidence-bar {
+            flex: 1;
+            height: 8px;
+            background: rgba(61, 95, 62, 0.2);
+            border-radius: 10px;
+            margin: 0 1rem;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-medium) 0%, var(--color-dark) 100%);
+            border-radius: 10px;
+            transition: width 1s ease;
+        }
+
+        .confidence-value {
+            font-weight: bold;
+            color: var(--color-dark);
+            min-width: 50px;
+        }
+
+        .news-sidebar {
+            position: sticky;
+            top: 100px;
+            height: fit-content;
+        }
+
+        .news-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-left: 4px solid var(--color-medium);
+        }
+
+        .news-card:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-left-color: var(--color-dark);
+        }
+
+        .news-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-dark);
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .news-excerpt {
+            font-size: 0.9rem;
+            color: var(--color-medium);
+            line-height: 1.5;
+            margin-bottom: 0.5rem;
+        }
+
+        .news-source {
+            font-size: 0.8rem;
+            color: var(--color-medium-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .news-loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--color-medium);
+        }
+
+        #webcam-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+
+        #webcam-container canvas {
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .weather-widget {
+            background: linear-gradient(135deg, var(--color-medium) 0%, var(--color-dark) 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .weather-icon {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .weather-temp {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .weather-desc {
+            text-align: center;
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+
+        .tips-section {
+            max-width: 1400px;
+            margin: 3rem auto;
+            padding: 0 5%;
+        }
+
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .tip-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border-top: 5px solid var(--color-medium);
+        }
+
+        .tip-card:hover {
+            transform: translateY(-5px);
+            border-top-color: var(--color-dark);
+        }
+
+        .tip-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tip-title {
+            color: var(--color-dark);
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .tip-desc {
+            color: var(--color-medium);
+            line-height: 1.6;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(61, 95, 62, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--color-dark);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        footer {
+            background: var(--color-dark);
+            color: var(--color-light);
+            padding: 3rem 5%;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin: 0.5rem 0;
+        }
+
+        .footer-section a {
+            color: var(--color-light);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--color-medium-light);
+        }
+
+        .status-message {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .status-success {
+            background: rgba(119, 155, 127, 0.3);
+            color: var(--color-dark);
+        }
+
+        .status-error {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .news-sidebar {
+                position: relative;
+                top: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            .nav-links {
+                gap: 1rem;
+                font-size: 0.9rem;
+            }
+            .btn-secondary {
+                margin-left: 0;
+                margin-top: 0.5rem;
+            }
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="nav-links">
-        <a href="index.html">HOME</a>
-        <a href="about.html">ABOUT</a>
-        <a href="home.html">Explore</a>
-    </div>
-<br><br><br><br><br><br><br><br><br><br><br>
-    <div class="hero">
-        <div class="hero-content">
-            <h1>ᖴᗩᖇᗰᒪIᑎK</h1>
-            <p>Welcome to Farmlink! Empowering farmers with AI-driven crop disease detection for healthier and more sustainable agriculture. Upload crop images and get instant, accurate diagnoses and solutions.</p>
-            <br>
-            <button class="start-btn" onclick="window.location.href='uploadpage.html';">
-                START
-            </button>
-            
+    <div class="bg-animation" id="bgAnimation"></div>
+
+    <nav>
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon">🌱</span>
+                FARMLINK
+            </div>
+            <div class="nav-links">
+                <a href="#home">Home</a>
+                <a href="#detection">Detection</a>
+                <a href="#news">News</a>
+                <a href="#tips">Tips</a>
+                <a href="#about">About</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero" id="home">
+        <h1>AI-Powered Crop Disease Detection</h1>
+        <p class="hero-subtitle">
+            Empowering farmers with cutting-edge machine learning technology. 
+            Upload crop images and receive instant, accurate disease diagnoses with treatment recommendations.
+        </p>
+    </section>
+
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-number" id="accuracy">95%</div>
+            <div class="stat-label">Detection Accuracy</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-number" id="speed">&lt;2s</div>
+            <div class="stat-label">Analysis Speed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🌾</div>
+            <div class="stat-number" id="crops">15+</div>
+            <div class="stat-label">Supported Crops</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">👨‍🌾</div>
+            <div class="stat-number" id="users">10K+</div>
+            <div class="stat-label">Active Farmers</div>
         </div>
     </div>
-</body>
-</html>
 
+    <div class="main-container" id="detection">
+        <div>
+            <div class="card">
+                <h2>📸 Upload Image for Analysis</h2>
+                <div class="upload-area" id="upload-area">
+                    <div class="upload-icon">☁️</div>
+                    <h3>Drop your crop image here</h3>
+                    <p>or click to browse</p>
+                    <input type="file" id="imageUpload" accept="image/*" hidden>
+                </div>
+                <img id="previewImage" style="display:none;" alt="Preview">
+                <div id="uploadStatus"></div>
+                <div style="margin-top: 1.5rem; text-align: center;">
+                    <button class="btn" onclick="predictUpload()">🔍 Analyze Image</button>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 2rem;">
+                <h2>📹 Live Webcam Detection</h2>
+                <div id="webcam-container"></div>
+                <div style="text-align: center; margin-top: 1rem;">
+                    <button class="btn" onclick="initWebcam()">📷 Start Webcam</button>
+                    <button class="btn btn-secondary" onclick="predictWebcam()">🔍 Analyze</button>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 2rem;">
+                <h2>📊 Detection Results</h2>
+                <div id="label-container"></div>
+            </div>
+        </div>
+
+        <div class="news-sidebar" id="news">
+            <div class="card">
+                <h2>📰 Agriculture News</h2>
+                <div id="news-container">
+                    <div class="news-card">
+                        <div class="news-title">📰 Precision Agriculture Advances</div>
+                        <div class="news-excerpt">
+                            New IoT sensors help farmers monitor soil health in real-time, leading to optimized fertilizer use and improved yields across multiple regions.
+                        </div>
+                        <div class="news-source">
+                            <span>Farm Tech News</span>
+                            <span>Today</span>
+                        </div>
+                    </div>
+                    <div class="news-card">
+                        <div class="news-title">🌾 Sustainable Farming Practices Expand</div>
+                        <div class="news-excerpt">
+                            More farmers adopt regenerative agriculture, improving soil health while reducing environmental impact significantly across global markets.
+                        </div>
+                        <div class="news-source">
+                            <span>Green Farming</span>
+                            <span>1 day ago</span>
+                        </div>
+                    </div>
+                    <div class="news-card">
+                        <div class="news-title">💧 Smart Irrigation Revolution</div>
+                        <div class="news-excerpt">
+                            Advanced irrigation systems reduce water waste by 40%, helping farmers in drought-prone regions maintain high productivity levels.
+                        </div>
+                        <div class="news-source">
+                            <span>Agriculture Today</span>
+                            <span>2 days ago</span>
+                        </div>
+                    </div>
+                    <div class="news-card">
+                        <div class="news-title">🤖 AI Transforms Crop Monitoring</div>
+                        <div class="news-excerpt">
+                            Machine learning models now identify plant diseases with 95% accuracy, helping farmers prevent crop losses through early detection.
+                        </div>
+                        <div class="news-source">
+                            <span>AgTech Innovation</span>
+                            <span>3 days ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="weather-widget">
+                <div class="weather-icon">🌤️</div>
+                <div class="weather-temp">25°C</div>
+                <div class="weather-desc">Perfect farming conditions</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tips-section" id="tips">
+        <h2 style="text-align: center; color: var(--color-dark); font-size: 2.5rem; margin-bottom: 2rem;">
+            🌱 Farming Best Practices
+        </h2>
+        <div class="tips-grid">
+            <div class="tip-card">
+                <div class="tip-icon">🐜</div>
+                <div class="tip-title">Pest Management</div>
+                <div class="tip-desc">
+                    Use integrated pest management with natural predators and eco-friendly pesticides. Regular monitoring helps early detection and prevention.
+                </div>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">🌿</div>
+                <div class="tip-title">Soil Health</div>
+                <div class="tip-desc">
+                    Apply organic compost and balanced fertilizers. Test soil regularly and maintain proper pH levels for optimal crop growth.
+                </div>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">💧</div>
+                <div class="tip-title">Water Conservation</div>
+                <div class="tip-desc">
+                    Implement drip irrigation and mulching techniques to retain soil moisture and reduce water waste significantly.
+                </div>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">🔄</div>
+                <div class="tip-title">Crop Rotation</div>
+                <div class="tip-desc">
+                    Rotate crops seasonally to prevent soil depletion, reduce pest buildup, and improve overall yield quality.
+                </div>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">🌍</div>
+                <div class="tip-title">Climate Adaptation</div>
+                <div class="tip-desc">
+                    Choose drought-resistant varieties and use greenhouse farming for stable production in changing climate conditions.
+                </div>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">📱</div>
+                <div class="tip-title">Smart Technology</div>
+                <div class="tip-desc">
+                    Leverage AI tools, weather forecasts, and mobile apps for data-driven farming decisions and better productivity.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer id="about">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>About Farmlink</h3>
+                <p>Farmlink leverages Google Teachable Machine and TensorFlow.js to provide farmers with affordable, accessible crop disease detection.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#detection">Detection Tool</a></li>
+                    <li><a href="#news">Latest News</a></li>
+                    <li><a href="#tips">Farming Tips</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Supported Crops</h3>
+                <ul>
+                    <li>Rice & Paddy</li>
+                    <li>Wheat</li>
+                    <li>Maize & Corn</li>
+                    <li>Tomato</li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact</h3>
+                <p>Email: support@farmlink.com</p>
+                <p>Help: FAQ & Documentation</p>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(231, 239, 218, 0.2);">
+            <p>© 2025 Farmlink. All rights reserved. Empowering sustainable agriculture.</p>
+        </div>
+    </footer>
+
+    <script>
+        function createLeaves() {
+            const bgAnimation = document.getElementById('bgAnimation');
+            const symbols = ['🌾', '🌱', '🍃', '🌿'];
+            
+            for (let i = 0; i < 15; i++) {
+                const leaf = document.createElement('div');
+                leaf.className = 'leaf';
+                leaf.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                leaf.style.left = Math.random() * 100 + '%';
+                leaf.style.animationDelay = Math.random() * 15 + 's';
+                leaf.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                bgAnimation.appendChild(leaf);
+            }
+        }
+
+        const URL = "https://teachablemachine.withgoogle.com/models/fpsv1H4Qb/";
+        let model, webcam, labelContainer, maxPredictions, uploadedImage;
+
+        async function loadModel() {
+            try {
+                const modelURL = URL + "model.json";
+                const metadataURL = URL + "metadata.json";
+                model = await tmImage.load(modelURL, metadataURL);
+                maxPredictions = model.getTotalClasses();
+                labelContainer = document.getElementById("label-container");
+                console.log("Model loaded successfully!");
+            } catch (error) {
+                console.error("Error loading model:", error);
+                showStatus("Error loading AI model. Please refresh the page.", "error");
+            }
+        }
+
+        const uploadArea = document.getElementById("upload-area");
+        const fileInput = document.getElementById("imageUpload");
+        const previewImage = document.getElementById("previewImage");
+
+        uploadArea.addEventListener("click", () => fileInput.click());
+
+        uploadArea.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            uploadArea.classList.add("dragover");
+        });
+
+        uploadArea.addEventListener("dragleave", () => {
+            uploadArea.classList.remove("dragover");
+        });
+
+        uploadArea.addEventListener("drop", (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove("dragover");
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith("image/")) {
+                handleImageFile(file);
+            }
+        });
+
+        fileInput.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (file) handleImageFile(file);
+        });
+
+        function handleImageFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                uploadedImage = new Image();
+                uploadedImage.src = e.target.result;
+                uploadedImage.onload = function() {
+                    previewImage.src = uploadedImage.src;
+                    previewImage.style.display = "block";
+                    showStatus("Image uploaded successfully! Click 'Analyze Image' to detect diseases.", "success");
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function initWebcam() {
+            try {
+                const flip = true;
+                webcam = new tmImage.Webcam(300, 300, flip);
+                await webcam.setup();
+                await webcam.play();
+                window.requestAnimationFrame(loop);
+                document.getElementById("webcam-container").innerHTML = "";
+                document.getElementById("webcam-container").appendChild(webcam.canvas);
+                showStatus("Webcam started successfully!", "success");
+            } catch (error) {
+                console.error("Webcam error:", error);
+                showStatus("Could not access webcam. Please check permissions.", "error");
+            }
+        }
+
+        async function loop() {
+            if (webcam) {
+                webcam.update();
+                window.requestAnimationFrame(loop);
+            }
+        }
+
+        async function predictWebcam() {
+            if (!model || !webcam) {
+                showStatus("Please start the webcam first!", "error");
+                return;
+            }
+            const prediction = await model.predict(webcam.canvas);
+            displayResults(prediction);
+        }
+
+        async function predictUpload() {
+            if (!model || !uploadedImage) {
+                showStatus("Please upload an image first!", "error");
+                return;
+            }
+            showStatus("Analyzing image...", "success");
+            const prediction = await model.predict(uploadedImage);
+            displayResults(prediction);
+        }
+
+        function displayResults(prediction) {
+            labelContainer.innerHTML = "";
+            const sorted = prediction.sort((a, b) => b.probability - a.probability);
+            
+            sorted.forEach((pred, i) => {
+                const percentage = (pred.probability * 100).toFixed(1);
+                const resultDiv = document.createElement("div");
+                resultDiv.className = "result-item";
+                resultDiv.style.animationDelay = `${i * 0.1}s`;
+                
+                resultDiv.innerHTML = `
+                    <span class="result-label">${pred.className}</span>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: ${percentage}%"></div>
+                    </div>
+                    <span class="confidence-value">${percentage}%</span>
+                `;
+                
+                labelContainer.appendChild(resultDiv);
+            });
+
+            if (sorted[0].probability > 0.7) {
+                showStatus(`Detected: ${sorted[0].className} with ${(sorted[0].probability * 100).toFixed(1)}% confidence`, "success");
+            } else {
+                showStatus("Low confidence detection. Please try a clearer image.", "error");
+            }
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById("uploadStatus");
+            statusDiv.className = `status-message status-${type}`;
+            statusDiv.textContent = message;
+            setTimeout(() => statusDiv.textContent = "", 5000);
+        }
+
+        async function fetchNews() {
+            const newsContainer = document.getElementById('news-container');
+            
+            // Immediately show static news content
+            newsContainer.innerHTML = `
+                <div class="news-card">
+                    <div class="news-title">📰 Precision Agriculture Advances</div>
+                    <div class="news-excerpt">
+                        New IoT sensors help farmers monitor soil health in real-time, leading to optimized fertilizer use and improved yields across multiple regions.
+                    </div>
+                    <div class="news-source">
+                        <span>Farm Tech News</span>
+                        <span>Today</span>
+                    </div>
+                </div>
+                <div class="news-card">
+                    <div class="news-title">🌾 Sustainable Farming Practices Expand</div>
+                    <div class="news-excerpt">
+                        More farmers adopt regenerative agriculture, improving soil health while reducing environmental impact significantly across global markets.
+                    </div>
+                    <div class="news-source">
+                        <span>Green Farming</span>
+                        <span>1 day ago</span>
+                    </div>
+                </div>
+                <div class="news-card">
+                    <div class="news-title">💧 Smart Irrigation Revolution</div>
+                    <div class="news-excerpt">
+                        Advanced irrigation systems reduce water waste by 40%, helping farmers in drought-prone regions maintain high productivity levels.
+                    </div>
+                    <div class="news-source">
+                        <span>Agriculture Today</span>
+                        <span>2 days ago</span>
+                    </div>
+                </div>
+                <div class="news-card">
+                    <div class="news-title">🤖 AI Transforms Crop Monitoring</div>
+                    <div class="news-excerpt">
+                        Machine learning models now identify plant diseases with 95% accuracy, helping farmers prevent crop losses through early detection.
+                    </div>
+                    <div class="news-source">
+                        <span>AgTech Innovation</span>
+                        <span>3 days ago</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + " years ago";
+            
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + " months ago";
+            
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + " days ago";
+            
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + " hours ago";
+            
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + " minutes ago";
+            
+            return "Just now";
+        }
+
+        function displayNews(newsText) {
+            const newsContainer = document.getElementById('news-container');
+            
+            const articles = [];
+            const lines = newsText.split('\n').filter(line => line.trim());
+            
+            let currentArticle = {};
+            for (const line of lines) {
+                if (line.includes('Title:') || line.match(/^\d+\./)) {
+                    if (currentArticle.title) articles.push(currentArticle);
+                    currentArticle = { title: line.replace(/Title:|^\d+\./, '').trim() };
+                } else if (line.includes('Summary:')) {
+                    currentArticle.summary = line.replace('Summary:', '').trim();
+                } else if (line.includes('Source:')) {
+                    currentArticle.source = line.replace('Source:', '').trim();
+                }
+            }
+            if (currentArticle.title) articles.push(currentArticle);
+
+            if (articles.length > 0) {
+                newsContainer.innerHTML = articles.slice(0, 4).map((article, i) => `
+                    <div class="news-card" style="animation-delay: ${i * 0.1}s">
+                        <div class="news-title">${article.title || 'Agriculture News'}</div>
+                        <div class="news-excerpt">${article.summary || 'Latest updates from the agricultural sector.'}</div>
+                        <div class="news-source">
+                            <span>${article.source || 'Agriculture News'}</span>
+                            <span>Recent</span>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                displayFallbackNews();
+            }
+        }
+
+        function displayFallbackNews() {
+            const newsContainer = document.getElementById('news-container');
+            newsContainer.innerHTML = `
+                <div class="news-card">
+                    <div class="news-title">📰 Precision Agriculture Advances</div>
+                    <div class="news-excerpt">
+                        New IoT sensors help farmers monitor soil health in real-time, leading to optimized fertilizer use and improved yields.
+                    </div>
+                    <div class="news-source">
+                        <span>Farm Tech News</span>
+                        <span>Today</span>
+                    </div>
+                </div>
+                <div class="news-card">
+                    <div class="news-title">🌾 Sustainable Farming Practices Expand</div>
+                    <div class="news-excerpt">
+                        More farmers adopt regenerative agriculture, improving soil health while reducing environmental impact significantly.
+                    </div>
+                    <div class="news-source">
+                        <span>Green Farming</span>
+                        <span>1 day ago</span>
+                    </div>
+                </div>
+                <div class="news-card">
+                    <div class="news-title">💧 Water Management Solutions</div>
+                    <div class="news-excerpt">
+                        Smart irrigation systems reduce water waste by 40%, helping farmers in drought-prone regions maintain productivity.
+                    </div>
+                    <div class="news-source">
+                        <span>Agriculture Today</span>
+                        <span>2 days ago</span>
+                    </div>
+                </div>
+                <div class="news-card">
+                    <div class="news-title">🤖 AI Transforms Crop Monitoring</div>
+                    <div class="news-excerpt">
+                        Machine learning models now identify plant diseases with 95% accuracy, helping farmers prevent crop losses early.
+                    </div>
+                    <div class="news-source">
+                        <span>AgTech Innovation</span>
+                        <span>3 days ago</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function animateCounter(id, target, suffix = '') {
+            const element = document.getElementById(id);
+            const duration = 2000;
+            const steps = 60;
+            const increment = target / steps;
+            let current = 0;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = target + suffix;
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current) + suffix;
+                }
+            }, duration / steps);
+        }
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        window.onload = async function() {
+            createLeaves();
+            await loadModel();
+            
+            setTimeout(() => {
+                animateCounter('accuracy', 95, '%');
+                animateCounter('crops', 15, '+');
+            }, 500);
+        };
