@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPTC Pala - Technical Excellence</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ffffff;
+            overflow: hidden;
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        /* Slide backgrounds */
+        .slide-1 {
+            background: linear-gradient(135deg, #e8f4f8 0%, #f0f9fc 50%, #e3f2fd 100%);
+        }
+
+        .slide-content {
+            background: linear-gradient(135deg, #f5f7fa 0%, #f9fafb 100%);
+        }
+
+        .slide-accent {
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9fc 100%);
+        }
+
+        .slide-alt {
+            background: linear-gradient(135deg, #ecf9ff 0%, #f8fbfd 100%);
+        }
+
+        /* Header styling */
+        .slide-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #0c2d42;
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        .slide-1 .slide-title {
+            font-size: 4.2rem;
+            color: #0a1f2e;
+            animation: slideInUp 1s ease-out;
+        }
+
+        .slide-subtitle {
+            font-size: 1.5rem;
+            color: #4a7c99;
+            margin-bottom: 3rem;
+            text-align: center;
+            animation: slideInRight 0.9s ease-out 0.2s both;
+        }
+
+        /* Content container */
+        .content-wrapper {
+            max-width: 950px;
+            width: 90%;
+            z-index: 10;
+        }
+
+        /* Grid layout */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2.5rem;
+            margin-top: 2.5rem;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .grid-item {
+            padding: 2.5rem;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.5) 100%);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(59, 130, 246, 0.15);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideInUp 0.8s ease-out backwards;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.08);
+        }
+
+        .grid-item:nth-child(1) { animation-delay: 0.2s; }
+        .grid-item:nth-child(2) { animation-delay: 0.3s; }
+        .grid-item:nth-child(3) { animation-delay: 0.4s; }
+        .grid-item:nth-child(4) { animation-delay: 0.5s; }
+
+        .grid-item:hover {
+            transform: translateY(-8px);
+            border-color: rgba(59, 130, 246, 0.4);
+            box-shadow: 0 12px 30px rgba(59, 130, 246, 0.15);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+        }
+
+        .grid-item h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.8rem;
+            color: #0369a1;
+            font-weight: 700;
+        }
+
+        .grid-item p {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: #475569;
+        }
+
+        /* Accent line */
+        .accent-line {
+            width: 100px;
+            height: 5px;
+            background: linear-gradient(90deg, #3b82f6, #06b6d4);
+            margin: 0 auto 2rem;
+            border-radius: 3px;
+            animation: scaleIn 0.8s ease-out;
+        }
+
+        /* Navigation */
+        .nav-container {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 2rem;
+            z-index: 100;
+            animation: slideInUp 0.8s ease-out 0.5s both;
+        }
+
+        button {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 700;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        button:hover:not(:disabled) {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            box-shadow: 0 4px 15px rgba(203, 213, 225, 0.2);
+            opacity: 0.6;
+        }
+
+        /* Slide counter */
+        .slide-counter {
+            position: fixed;
+            top: 35px;
+            right: 45px;
+            color: #0c2d42;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+            z-index: 100;
+            animation: slideInRight 0.8s ease-out;
+        }
+
+        /* Autoplay toggle */
+        .autoplay-toggle {
+            position: fixed;
+            top: 35px;
+            left: 45px;
+            z-index: 100;
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        .toggle-btn {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
+        }
+
+        .toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Fullscreen button */
+        .fullscreen-btn {
+            position: fixed;
+            bottom: 40px;
+            right: 45px;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all 0.4s ease;
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+            z-index: 100;
+            animation: slideInUp 0.8s ease-out 0.5s both;
+        }
+
+        .fullscreen-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Decorative elements */
+        .decoration {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.08;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .deco-1 {
+            width: 500px;
+            height: 500px;
+            background: #3b82f6;
+            top: -250px;
+            right: -250px;
+        }
+
+        .deco-2 {
+            width: 400px;
+            height: 400px;
+            background: #06b6d4;
+            bottom: -200px;
+            left: -200px;
+            animation-delay: 2s;
+        }
+
+        /* Text list */
+        .text-list {
+            text-align: left;
+            margin-top: 2rem;
+        }
+
+        .text-list li {
+            list-style: none;
+            margin: 1.5rem 0;
+            padding-left: 2.5rem;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #334155;
+            animation: slideInLeft 0.8s ease-out backwards;
+        }
+
+        .text-list li:nth-child(1) { animation-delay: 0.2s; }
+        .text-list li:nth-child(2) { animation-delay: 0.3s; }
+        .text-list li:nth-child(3) { animation-delay: 0.4s; }
+        .text-list li:nth-child(4) { animation-delay: 0.5s; }
+        .text-list li:nth-child(5) { animation-delay: 0.6s; }
+
+        .text-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #06b6d4;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #3b82f6, #06b6d4);
+            z-index: 99;
+            transition: width 0.5s ease;
+        }
+
+        /* Fullscreen styles */
+        .presentation:fullscreen {
+            background: white;
+        }
+
+        .timer-display {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.9rem;
+            z-index: 100;
+            margin-left: 8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <div class="autoplay-toggle">
+        <button class="toggle-btn" id="autoplayBtn" onclick="toggleAutoplay()">▶ Autoplay</button>
+    </div>
+
+    <div class="slide-counter">
+        <span id="current">1</span> / <span id="total">8</span>
+    </div>
+
+    <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+
+    <div class="timer-display" id="timerDisplay"></div>
+
+    <div class="presentation" id="presentation">
+        <!-- Slide 1: Title -->
+        <div class="slide slide-1 active">
+            <div class="decoration deco-1"></div>
+            <div class="decoration deco-2"></div>
+            <div class="content-wrapper">
+                <div class="accent-line"></div>
+                <h1 class="slide-title">Government Polytechnic College, Pala</h1>
+                <p class="slide-subtitle">A Centre for Technical Excellence in Kerala</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: About -->
+        <div class="slide slide-content">
+            <div class="decoration deco-2"></div>
+            <div class="content-wrapper">
+                <div class="accent-line"></div>
+                <h2 class="slide-title">About GPTC Pala</h2>
+                <ul class="text-list">
+                    <li>Established in 1984 by the Government of Kerala</li>
+                    <li>Located at Kanattupara, 2 km from Pala town</li>
+                    <li>Part of the Directorate of Technical Education, Kerala</li>
+                    <li>Founded to support societal development through skilled technicians</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 3: Vision & Mission -->
+        <div class="slide slide-accent">
+            <div class="decoration deco-1"></div>
+            <div class="content-wrapper">
+                <div class="accent-line"></div>
+                <h2 class="slide-title">Vision & Mission</h2>
+                <div class="grid-2">
+                    <div class="grid-item">
+                        <h3>🎯 Vision</h3>
+                        <p>Become a centre of excellence in engineering and technology</p>
+                    </div>
+                    <div class="grid-item">
+                        <h3>🚀 Mission</h3>
+                        <p>Provide quality education, transform students into ethical professionals, and promote social responsibility</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Programs -->
+        <div class="slide slide-content">
+            <div class="decoration deco-1"></div>
+            <div class="content-wrapper">
+                <div class="accent-line"></div>
+                <h2 class="slide-title">Academic Programs</h2>
+                <div class="grid-4">
+                    <div class="grid-item">
+                        <h3>⚡ Electronics Engineering</h3>
+                        <p>Well-equipped labs and hands-on practical exposure since 1984</p>
+                    </div>
+                    <div class="grid-item">
+                        <h3>🔌 Electrical & Electronics</h3>
+                        <p>NBA-accredited program established in 2013</p>
+                    </div>
+                    <div class="grid-item">
+                        <h3>💻 Computer Engineering</h3>
+                        <p>Started in 1985 with modern computing infrastructure</p>
+                    </div>
+                    <div class="grid-item">
+                        <h3>📡 Instrumentation Engineering</h3>
+                        <p>NBA-accredited for 2025–2028</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Infrastructure -->
+        <div class="slide slide-alt">
+            <div class="decoration deco-2"></div>
+            <div class="content-wrapper">
+                <div class="accent-line"></div>
+                <h2 class="slide-title">Infrastructure & Facilities</h2>
+                <div class="grid-2">
+                    <div class="grid-item">
+                        <h3>🏢 Labs & Technology</h3>
+                        <p>Well-established laboratories, high-speed internet, Wi-Fi coverage, modern teaching tools</p>
+                    </div>
+                    <div class="grid-item">
+                        <h3>📍 Schedule & Location</h3>
+                        <p>9:00 AM – 4:30 PM weekdays. Near Kottayam railway (30 km), Cochin airport (70 km)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Recognition -->
+        <div class="slide slide-content">
+            <div class="decoration deco-1"></div>
+            <div class="content-wrapper">
+                <div class="accent-line"></div>
+                <h2 class="slide-title">Accreditation & Recognition</h2>
+                <ul class="text-list">
+                    <li>Electrical & Electronics Engineering: NBA-accredited (2023–2026)</li>
+                    <li>Instrumentation Engineering: NBA-accredited (2025–2028)</li>
+                    <li>AICTE approved Government Polytechnic institution</li>
+                    <li>Strong legacy and proven track record since 1984</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 7: Why Choose GPTC -->
+        <div class="slide slide-accent">
+            <div class="decoration deco-2"></div>
+            <div class="content-wrapper">
+                <div class="accent-line"></div>
+                <h2 class="slide-title">Why Choose GPTC Pala?</h2>
+                <ul class="text-list">
+                    <li>Government-run institution—affordable and trustworthy</li>
+                    <li>40+ years of technical excellence and alumni support</li>
+                    <li>Multiple diploma programs with industry-relevant curriculum</li>
+                    <li>Accredited departments boosting career credibility</li>
+                    <li>Active alumni network mentoring current students</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 8: Contact -->
+        <div class="slide slide-content">
+            <div class="decoration deco-1"></div>
+            <div class="content-wrapper">
+                <div class="accent-line"></div>
+                <h2 class="slide-title">Get in Touch</h2>
+                <div class="grid-2">
+                    <div class="grid-item">
+                        <h3>📞 Contact</h3>
+                        <p>Phone: 04822-200802<br><br>Email: info@gptcpala.org</p>
+                    </div>
+                    <div class="grid-item">
+                        <h3>🗺️ Visit Us</h3>
+                        <p>Kanattupara, Pala P.O<br>Kottayam District – 686575<br>Website: gptcpala.org</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-container">
+        <button id="prevBtn" onclick="changeSlide(-1)">← Previous</button>
+        <button id="nextBtn" onclick="changeSlide(1)">Next →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        let autoplay = false;
+        let autoplayInterval;
+        let timePerSlide = 6000; // 6 seconds per slide
+
+        document.getElementById('total').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            
+            document.getElementById('current').textContent = currentSlide + 1;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+
+            // Update progress bar
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            // Update timer
+            updateTimer();
+        }
+
+        function changeSlide(direction) {
+            if (autoplay) {
+                clearInterval(autoplayInterval);
+                startAutoplay();
+            }
+            showSlide(currentSlide + direction);
+        }
+
+        function toggleAutoplay() {
+            autoplay = !autoplay;
+            const btn = document.getElementById('autoplayBtn');
+            
+            if (autoplay) {
+                btn.classList.add('active');
+                btn.textContent = '⏸ Autoplay';
+                startAutoplay();
+            } else {
+                btn.classList.remove('active');
+                btn.textContent = '▶ Autoplay';
+                clearInterval(autoplayInterval);
+                document.getElementById('timerDisplay').textContent = '';
+            }
+        }
+
+        function startAutoplay() {
+            let timeRemaining = timePerSlide;
+            updateTimer();
+
+            autoplayInterval = setInterval(() => {
+                timeRemaining -= 100;
+                document.getElementById('timerDisplay').textContent = Math.ceil(timeRemaining / 1000) + 's';
+
+                if (timeRemaining <= 0) {
+                    if (currentSlide < totalSlides - 1) {
+                        showSlide(currentSlide + 1);
+                        timeRemaining = timePerSlide;
+                    } else {
+                        autoplay = false;
+                        document.getElementById('autoplayBtn').classList.remove('active');
+                        document.getElementById('autoplayBtn').textContent = '▶ Autoplay';
+                        clearInterval(autoplayInterval);
+                        document.getElementById('timerDisplay').textContent = '';
+                    }
+                }
+            }, 100);
+        }
+
+        function updateTimer() {
+            if (!autoplay) {
+                document.getElementById('timerDisplay').textContent = '';
+            } else {
+                document.getElementById('timerDisplay').textContent = '6s';
+            }
+        }
+
+        function toggleFullscreen() {
+            const elem = document.getElementById('presentation');
+            if (!document.fullscreenElement) {
+                elem.requestFullscreen().catch(err => console.log(err));
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' && currentSlide > 0) changeSlide(-1);
+            if (e.key === 'ArrowRight' && currentSlide < totalSlides - 1) changeSlide(1);
+            if (e.key === ' ') {
+                e.preventDefault();
+                toggleAutoplay();
+            }
+            if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>
