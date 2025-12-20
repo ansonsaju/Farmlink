@@ -45,6 +45,13 @@ This project was developed as my **first minor project** during my Diploma in Co
 
 ---
 
+## 🤝 Open Source Contribution
+Farmlink is an open-source project and welcomes contributions from the community.
+
+If you'd like to contribute, please read the CONTRIBUTING.md file and check the
+Issues section for ideas.
+
+
 ## 🎯 Learning Outcomes
 - Basics of AI and Machine Learning
 - Image-based classification
